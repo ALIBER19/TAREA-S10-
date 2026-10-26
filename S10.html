@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejercicios con Vectores Numéricos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        table td {
+            text-align: center;
+            padding: 8px;
+            border: 1px solid #ccc;
+        }
+        .controls-table td {
+            border: none;
+            text-align: left;
+        }
+        button {
+            padding: 6px 12px;
+            cursor: pointer;
+            margin: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <h4>Ejercicio con Vectores</h4>
+    <div>
+        <table class="controls-table">
+            <tbody>
+                <tr>
+                    <td>Dimensión del arreglo:</td>
+                    <td>
+                        <select id="select-dimension-arreglo">
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10" selected>10</option>
+                            <option value="15">15</option>
+                            <option value="20">20</option>
+                            <option value="25">25</option>
+                            <option value="30">30</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Ordenamiento (Asc/Desc):</td>
+                    <td>
+                        <select id="select-orden">
+                            <option value="asc">Ascendente</option>
+                            <option value="desc">Descendente</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Ingrese valor a buscar / transformar:</td>
+                    <td><input type="text" id="id-valor-busqueda" maxlength="4" size="5"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <br>
+
+    <table id="id-table-vector-numerico">
+        <thead>
+            <tr>
+                <td colspan="10" id="titulo-vector">Vector numérico de N elementos</td>
+            </tr>
+        </thead>
+        <tbody id="cuerpo-tabla-vector">
+            <!-- Dinámico -->
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="5"><button id="btn-cargar-vector">Cargar Vector</button></td>
+                <td colspan="5"><button id="btn-vaciar-vector">Vaciar Vector</button></td>
+            </tr>
+            <tr>
+                <td colspan="5"><button id="btn-numero-mayor">Número Mayor</button></td>
+                <td colspan="5"><button id="btn-numero-menor">Número Menor</button></td>
+            </tr>
+            <tr>
+                <td colspan="5"><button id="btn-sumar-valores">Suma de Valores</button></td>
+                <td colspan="5"><button id="btn-producto-vector">Producto de Valores</button></td>
+            </tr>
+            <tr>
+                <td colspan="5">
+                    <button id="btn-calcular-moda">Moda</button>
+                    <button id="btn-invertir-vector">Invertir Vector</button>
+                </td>
+                <td colspan="5">
+                    <button id="btn-calcular-media">Media</button>
+                    <button id="btn-calcular-mediana">Mediana</button>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="5">
+                    <button id="btn-ordenar-seleccion">Ordenar Selección</button>
+                    <button id="btn-ordenar-burbuja">Ordenar Burbuja</button>
+                </td>
+                <td colspan="5">
+                    <button id="btn-ordenar-insercion">Ordenar Inserción</button>
+                    <button id="btn-ordenar-fusion">Ordenar Fusión</button>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="5">
+                    <button id="btn-busqueda-secuencial">Búsqueda Secuencial</button>
+                    <button id="btn-busqueda-binaria">Búsqueda Binaria</button>
+                </td>
+                <td colspan="5">
+                    <button id="btn-eliminar-duplicados">Eliminar Duplicados</button>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+    <hr>
+    <table>
+        <thead>
+            <tr>
+                <td colspan="2"><b>Cálculos con vectores</b></td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Resultado:</td>
+                <td><input type="text" id="id-txt-respuesta" size="85" readonly></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        let vector = [];
+
+        const selectDimension = document.getElementById("select-dimension-arreglo");
+        const cuerpoTablaVector = document.getElementById("cuerpo-tabla-vector");
+        const txtRespuesta = document.getElementById("id-txt-respuesta");
+        const inputBusqueda = document.getElementById("id-valor-busqueda");
+        const selectOrden = document.getElementById("select-orden");
+        const tituloVector = document.getElementById("titulo-vector");
+
+        function actualizarVista() {
+            cuerpoTablaVector.innerHTML = "";
+            let n = vector.length;
+            tituloVector.setAttribute("colspan", n > 0 ? n : 1);
+            tituloVector.innerText = `Vector numérico de ${n} elementos`;
+
+            let filaIndices = document.createElement("tr");
+            let filaValores = document.createElement("tr");
+
+            for (let i = 0; i < n; i++) {
+                let tdIndex = document.createElement("td");
+                tdIndex.innerText = i;
+                filaIndices.appendChild(tdIndex);
+
+                let tdVal = document.createElement("td");
+                tdVal.innerText = vector[i];
+                filaValores.appendChild(tdVal);
+            }
+
+            cuerpoTablaVector.appendChild(filaIndices);
+            cuerpoTablaVector.appendChild(filaValores);
+        }
+
+        // Inicializar con ceros según la dimensión por defecto
+        function inicializarVacio() {
+            let n = parseInt(selectDimension.value);
+            vector = new Array(n).fill(0);
+            actualizarVista();
+        }
+
+        selectDimension.addEventListener("change", inicializarVacio);
+        window.onload = inicializarVacio;
+
+        // 1. Cargar Vector (Valores aleatorios del 1 al 99)
+        document.getElementById("btn-cargar-vector").addEventListener("click", () => {
+            let n = parseInt(selectDimension.value);
+            vector = [];
+            for (let i = 0; i < n; i++) {
+                vector.push(Math.floor(Math.random() * 99) + 1);
+            }
+            actualizarVista();
+            txtRespuesta.value = "Vector cargado exitosamente con valores aleatorios.";
+        });
+
+        // 2. Vaciar Vector
+        document.getElementById("btn-vaciar-vector").addEventListener("click", () => {
+            inicializarVacio();
+            txtRespuesta.value = "Vector vaciado (reiniciado a ceros).";
+        });
+
+        // 3. Número Mayor
+        document.getElementById("btn-numero-mayor").addEventListener("click", () => {
+            if (vector.length === 0) return;
+            let mayor = Math.max(...vector);
+            txtRespuesta.value = `El número mayor es: ${mayor}`;
+        });
+
+        // 4. Número Menor
+        document.getElementById("btn-numero-menor").addEventListener("click", () => {
+            if (vector.length === 0) return;
+            let menor = Math.min(...vector);
+            txtRespuesta.value = `El número menor es: ${menor}`;
+        });
+
+        // 5. Suma de Valores
+        document.getElementById("btn-sumar-valores").addEventListener("click", () => {
+            let suma = vector.reduce((acc, val) => acc + val, 0);
+            txtRespuesta.value = `La suma de los valores es: ${suma}`;
+        });
+
+        // 6. Producto de Valores
+        document.getElementById("btn-producto-vector").addEventListener("click", () => {
+            let producto = vector.reduce((acc, val) => acc * val, 1);
+            txtRespuesta.value = `El producto de los valores es: ${producto}`;
+        });
+
+        // 7. Media
+        document.getElementById("btn-calcular-media").addEventListener("click", () => {
+            let suma = vector.reduce((acc, val) => acc + val, 0);
+            let media = suma / vector.length;
+            txtRespuesta.value = `La media es: ${media.toFixed(2)}`;
+        });
+
+        // 8. Mediana
+        document.getElementById("btn-calcular-mediana").addEventListener("click", () => {
+            let temp = [...vector].sort((a, b) => a - b);
+            let mitad = Math.floor(temp.length / 2);
+            let mediana = temp.length % 2 !== 0 ? temp[mitad] : (temp[mitad - 1] + temp[mitad]) / 2;
+            txtRespuesta.value = `La mediana es: ${mediana}`;
+        });
+
+        // 9. Moda
+        document.getElementById("btn-calcular-moda").addEventListener("click", () => {
+            let conteo = {};
+            let maxFrecuencia = 0;
+            let modas = [];
+
+            vector.forEach(val => {
+                conteo[val] = (conteo[val] || 0) + 1;
+                if (conteo[val] > maxFrecuencia) {
+                    maxFrecuencia = conteo[val];
+                }
+            });
+
+            for (let val in conteo) {
+                if (conteo[val] === maxFrecuencia) {
+                    modas.push(val);
+                }
+            }
+
+            txtRespuesta.value = maxFrecuencia > 1 ? `La(s) moda(s) es/son: ${modas.join(", ")} (Frecuencia: ${maxFrecuencia})` : "No hay moda clara (todos aparecen igual número de veces).";
+        });
+
+        // 10. Invertir Vector
+        document.getElementById("btn-invertir-vector").addEventListener("click", () => {
+            vector.reverse();
+            actualizarVista();
+            txtRespuesta.value = "Vector invertido correctamente.";
+        });
+
+        // 11. Eliminar Duplicados
+        document.getElementById("btn-eliminar-duplicados").addEventListener("click", () => {
+            vector = [...new Set(vector)];
+            selectDimension.value = vector.length <= 30 ? vector.length : 30;
+            actualizarVista();
+            txtRespuesta.value = "Duplicados eliminados. Nuevo tamaño del vector: " + vector.length;
+        });
+
+        // --- ORDENAMIENTO ---
+        function obtenerCriterioOrden() {
+            return selectOrden.value;
+        }
+
+        // Ordenamiento por Selección
+        document.getElementById("btn-ordenar-seleccion").addEventListener("click", () => {
+            let asc = obtenerCriterioOrden() === "asc";
+            let n = vector.length;
+            for (let i = 0; i < n - 1; i++) {
+                let minMaxIdx = i;
+                for (let j = i + 1; j < n; j++) {
+                    if (asc ? vector[j] < vector[minMaxIdx] : vector[j] > vector[minMaxIdx]) {
+                        minMaxIdx = j;
+                    }
+                }
+                if (minMaxIdx !== i) {
+                    let temp = vector[i];
+                    vector[i] = vector[minMaxIdx];
+                    vector[minMaxIdx] = temp;
+                }
+            }
+            actualizarVista();
+            txtRespuesta.value = `Vector ordenado por Selección (${asc ? 'Ascendente' : 'Descendente'})`;
+        });
+
+        // Ordenamiento Burbuja
+        document.getElementById("btn-ordenar-burbuja").addEventListener("click", () => {
+            let asc = obtenerCriterioOrden() === "asc";
+            let n = vector.length;
+            for (let i = 0; i < n - 1; i++) {
+                for (let j = 0; j < n - i - 1; j++) {
+                    let condicion = asc ? vector[j] > vector[j + 1] : vector[j] < vector[j + 1];
+                    if (condicion) {
+                        let temp = vector[j];
+                        vector[j] = vector[j + 1];
+                        vector[j + 1] = temp;
+                    }
+                }
+            }
+            actualizarVista();
+            txtRespuesta.value = `Vector ordenado por Burbuja (${asc ? 'Ascendente' : 'Descendente'})`;
+        });
+
+        // Ordenamiento por Inserción
+        document.getElementById("btn-ordenar-insercion").addEventListener("click", () => {
+            let asc = obtenerCriterioOrden() === "asc";
+            let n = vector.length;
+            for (let i = 1; i < n; i++) {
+                let actual = vector[i];
+                let j = i - 1;
+                while (j >= 0 && (asc ? vector[j] > actual : vector[j] < actual)) {
+                    vector[j + 1] = vector[j];
+                    j--;
+                }
+                vector[j + 1] = actual;
+            }
+            actualizarVista();
+            txtRespuesta.value = `Vector ordenado por Inserción (${asc ? 'Ascendente' : 'Descendente'})`;
+        });
+
+        // Ordenamiento por Fusión (Merge Sort)
+        function mergeSort(arr, asc) {
+            if (arr.length <= 1) return arr;
+            let mid = Math.floor(arr.length / 2);
+            let left = mergeSort(arr.slice(0, mid), asc);
+            let right = mergeSort(arr.slice(mid), asc);
+            return merge(left, right, asc);
+        }
+
+        function merge(left, right, asc) {
+            let result = [], il = 0, ir = 0;
+            while (il < left.length && ir < right.length) {
+                let cond = asc ? left[il] < right[ir] : left[il] > right[ir];
+                if (cond) {
+                    result.push(left[il++]);
+                } else {
+                    result.push(right[ir++]);
+                }
+            }
+            return result.concat(left.slice(il)).concat(right.slice(ir));
+        }
+
+        document.getElementById("btn-ordenar-fusion").addEventListener("click", () => {
+            let asc = obtenerCriterioOrden() === "asc";
+            vector = mergeSort(vector, asc);
+            actualizarVista();
+            txtRespuesta.value = `Vector ordenado por Fusión (${asc ? 'Ascendente' : 'Descendente'})`;
+        });
+
+        // --- BÚSQUEDA ---
+        // Búsqueda Secuencial
+        document.getElementById("btn-busqueda-secuencial").addEventListener("click", () => {
+            let valBuscado = parseInt(inputBusqueda.value);
+            if (isNaN(valBuscado)) {
+                txtRespuesta.value = "Por favor, ingrese un valor numérico válido para buscar.";
+                return;
+            }
+            let posiciones = [];
+            vector.forEach((val, idx) => {
+                if (val === valBuscado) posiciones.push(idx);
+            });
+
+            if (posiciones.length > 0) {
+                txtRespuesta.value = `Valor ${valBuscado} encontrado en la(s) posición(es): ${posiciones.join(", ")}`;
+            } else {
+                txtRespuesta.value = `El valor ${valBuscado} no fue encontrado en el vector.`;
+            }
+        });
+
+        // Búsqueda Binaria (Requiere vector ordenado ascendentemente)
+        document.getElementById("btn-busqueda-binaria").addEventListener("click", () => {
+            let valBuscado = parseInt(inputBusqueda.value);
+            if (isNaN(valBuscado)) {
+                txtRespuesta.value = "Por favor, ingrese un valor numérico válido para buscar.";
+                return;
+            }
+
+            // Ordenar automáticamente para búsqueda binaria
+            vector.sort((a, b) => a - b);
+            actualizarVista();
+
+            let inicio = 0, fin = vector.length - 1, encontrado = -1;
+            while (inicio <= fin) {
+                let medio = Math.floor((inicio + fin) / 2);
+                if (vector[medio] === valBuscado) {
+                    encontrado = medio;
+                    break;
+                } else if (vector[medio] < valBuscado) {
+                    inicio = medio + 1;
+                } else {
+                    fin = medio - 1;
+                }
+            }
+
+            if (encontrado !== -1) {
+                txtRespuesta.value = `Búsqueda Binaria: Valor ${valBuscado} encontrado en la posición ${encontrado} (Vector ordenado automáticamente).`;
+            } else {
+                txtRespuesta.value = `Búsqueda Binaria: El valor ${valBuscado} no se encuentra en el vector.`;
+            }
+        });
+    </script>
+</body>
+
+</html>
